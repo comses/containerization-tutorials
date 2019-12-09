@@ -21,6 +21,8 @@ computer that is used to open it, which is usually not a very serious
 problem, but the same can apply to any computational model, potentially
 undermining the reproducibility of its results.
 
+<img src="LackingPortability.png" width="80%" />
+
 Being able to produce a container of your model (or your slides) allows
 you to run it in different machines in a reliable way, irrespectively of
 the programs that these machines can have installed (as long as they
@@ -35,6 +37,8 @@ be runnable even after 4 or 5 years and still generate reproducible
 results, even when the software versions used now become obsolete, in
 case future researchers would want to build on your work (which in the
 spirit of good science should be one of our main aims).
+
+<img src="Portability.png" width="80%" />
 
 As a final note, since each container includes the right version of the
 software to run the code, using containers allows you to run models
@@ -77,7 +81,10 @@ computer. One useful analogy is to think of an image as a recipe (or a
 recipe that somehow includes the necessary ingredients), and the
 container as the action of cooking the plate. Images can be easily
 shared and also reused to build new images, using the existing one as a
-base.
+base. When we talk about "containerization" (or "Dockerization" when
+containerizing using Docker), we refer to the act of building the image
+that will allow you to reproduce your model's dynamics and results in
+any computer.
 
 What is Docker?
 ---------------
