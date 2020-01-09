@@ -1,8 +1,7 @@
-In CoMSES we believe that the containerization of models should become a
-new standard. In this section we will explain what we mean by
-containerization, what is Docker, and why you should use it. We also
-provide a list of tutorials so you can dockerize your model written in
-languages like NetLogo, R and Python.
+At CoMSES Net we use containerization as a way to distribute and deploy
+our computational models. In this section we will explain containerization,
+Docker, and why you should use it. We also provide a list of tutorials so
+you can dockerize your model written in languages like NetLogo, R and Python.
 
 Why should you use this (and keep reading on)?
 ----------------------------------------------
@@ -23,7 +22,7 @@ undermining the reproducibility of its results.
 
 <img src="LackingPortability.png" width="80%" />
 
-Being able to produce a container of your model (or your slides) allows
+Being able to produce an image for your model allows
 you to run it in different machines in a reliable way, irrespectively of
 the programs that these machines can have installed (as long as they
 have the software that allows them to run the containers; more on that
@@ -40,10 +39,10 @@ spirit of good science should be one of our main aims).
 
 <img src="Portability.png" width="80%" />
 
-As a final note, since each container includes the right version of the
+Additionally, since each container includes the right version of the
 software to run the code, using containers allows you to run models
 requiring different versions of software without needing to change
-anything in your own computer configuration. Also, you can use this to
+anything in your own computer configuration. This allows you to easily
 test newer or older versions of software.
 
 What exactly is a container?
@@ -100,5 +99,10 @@ images, created by software vendors, open-source projects and the
 community. These images can be easily used as a base to create the
 environment to run your code.
 
-Docker Desktop, the Docker app for Windows and MacOS, can be downloaded
-from this [link](https://www.docker.com/products/docker-desktop).
+Installation
+------------
+
+On Mac OS X and Windows you should use [Docker Desktop](https://www.docker.com/products/docker-desktop).
+Instructions for installation on different Linux distributions such as
+[Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and
+[Fedora](https://docs.docker.com/install/linux/docker-ce/fedora/) are also available.
