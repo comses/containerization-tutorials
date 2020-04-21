@@ -1,0 +1,371 @@
+This tutorial shows how to containerize an R model in a Docker image. As a result, you will be able to run simulations in a container and get the results in a folder that you specify. 
+
+This tutorial will allow you to containerize your model and still be able to use RStudio within the container. However, since using just an R installation is the preferred method for archival purposes, you might want to check [this tutorial](https://forum.comses.net/t/containerizing-your-r-model/8301) that explains how to do so. This series of tutorials was developed assuming that the user has a finished model and is looking for a straightforward way to containerize it. Another possibility is to develop your model within the Docker image, which is covered in the [R Docker tutorial](https://ropenscilabs.github.io/r-docker-tutorial/), produced by rOpenSci Labs. 
+
+To start this tutorial, you will need to have [Docker](https://www.docker.com/products/docker-desktop) installed in your computer, as well as the R files of your model. To be able to see the results of your simulation, the code has to write the outputs in a `results` folder. We will use as an example the implementation of Schelling's segregation model proposed in [this tutorial](https://simulatingcomplexity.wordpress.com/2016/01/06/building-a-schelling-segregation-model-in-r/) by simulatingcomplexity. If you want to try the following steps using the same example, you can copy the script we include at [the end](#heading--Rexample) of this tutorial. Following our [suggested directory structure](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424), we created a project folder named `MyDocker` and it contains the folders `data`, `docs`, `results`, and `src`. `schelling.R` is in the `src` folder and the rest of the folders are empty. 
+
+
+
+<h1 id='heading--building'>Building the image</h1>
+
+***
+<h2> 1. Determine what folder to use </h2>
+
+Docker looks for the files existing in the folder where you are when you call the `build` command. Therefore, it is important to verify you are able to navigate to the folder that contains your project using command line. If that is the case, you can continue to step 2. Otherwise, we suggest you to follow Step 1.1 to create a `MyDocker` folder that you can later navigate to.
+
+<details> 
+<summary><b>Step 1.1 on Mac</b></summary>
+
+1. Use Finder to go to your home directory: go to Macintosh HD, then to Users and then to the folder with your user name (which should have a house icon).
+2. Create a folder named `MyDocker` in your home directory.
+3. Copy the contents of your project's folder to `MyDocker`. In our example, since our project consists of a single R file (example.R), only the `src` folder will contain any files, but we still need to have at least a `results` folder to store the results of our experiment.
+
+</details>
+
+<details>
+<summary><b>Step 1.1 on Windows</b></summary>
+
+1. Open File Explorer, go to My PC, then to the C: drive, then to Users, and finally your username.
+2. Create a new folder named `MyDocker`.
+3. Copy the contents of your project's folder to `MyDocker`. In our example, since our project consists of a single R file (example.R), only the `src` folder will contain any files, but we still need to have at least a `results` folder to store the results of our experiment
+</details>
+
+
+<h2> 2. Create a Dockerfile</h2>
+
+The Dockerfile is the file that describes how to create the image of your model and what steps to execute when you run a container based on that image. To create one, open a plain text editor (examples are TextEdit for Mac or Notepad++ for Windows) and copy the following code.
+
+<pre><code>FROM rocker/rstudio:<ins>your_R_version</ins>
+
+# Create a project folder
+RUN mkdir /home/rstudio/project
+   
+# Copy contents of MyDocker folder to project folder in container 
+COPY --chown=rstudio:rstudio . /home/rstudio/project/
+
+# Set working directory to project
+WORKDIR /home/rstudio/project/
+
+# Install R packages (uncomment next line if needed)
+# RUN R -e "install.packages(<ins>vector_of_package_names</ins>)"
+
+# Change ownership of files
+RUN chown -R rstudio:rstudio /home/rstudio
+</code></pre>
+
+<h2> 3. Modify the Dockerfile blueprint as needed</h2>
+In your plain text editor, modify the following:
+
+* Replace <ins>your_R_version</ins> with the R version you are using. A quick way to figure this out is to type `R.version$version.string` in your R console. In our example, the first line of the Dockerfile would be `FROM rocker/r-ver:3.6.0` .
+* If you need to install additional packages:
+    * Uncomment line 10.
+    * Replace <ins>vector_of_package_names</ins> with a character vector containing the names of the packages needed.
+
+
+
+<h2> 4. Save your Dockerfile </h2>
+
+It is important to save the Dockerfile with the correct format and name, or Docker might not be able to use it to build your image.
+
+<details>
+<summary><b>Saving your Dockerfile in Mac</b></summary>
+
+1. If using TextEdit, make sure it will be saved as plain text. To do this, you can click on Format and then on Make Plain Text, or just press <kbd>shift</kbd> + <kbd>command</kbd> + <kbd>T</kbd>.
+2. Click on File, then Save... . In the dialog window that opens:
+    + Type `Dockerfile` as the name of the file.
+    + Choose the folder you are going to use (Step 1) as the location of the file. In our example, we would save the `Dockerfile` in `MyDocker`.
+    + Uncheck the box that allows to use the `.txt` extension if no extension is provided.
+    + Make sure that the format of the file (in the drop-down menu below) is plain text (or Unicode UTF-8).
+    + If present, uncheck the box that allows to use the `.txt` extension.
+4. Open Finder and look for your `Dockerfile`. It should show up in the folder you chose to use in Step 1 (in our example, in `MyDocker`) and it should not include any extensions in its name (if it has a name like `Dockerfile.txt`, you should rename it to `Dockerfile`)
+
+</details>
+
+<details>
+<summary><b>Saving your Dockerfile in Windows</b></summary>
+
+1. Save your plain text as `Dockerfile` (do not include any extensions in the file name, e.g. .txt) and make sure it is saved in the folder you are going to use (Step 1). In our example, we saved our `Dockerfile` in `MyDocker`.
+2. Use File Explorer to check that the file was saved with the right name (`Dockerfile`, no extensions) and in the right location, i.e. the folder you chose to use in Step 1 (`MyDocker` in our example).
+
+</details>
+
+<h2> 5. Double-check your directory structure</h2>
+
+The code in the `Dockerfile` assumes a specific organization within the folder containing your Dockerfile. Either the `build` or the `run` command will fail if it cannot find the right files due to an organization or folder naming that are different than expected. Therefore, it is necessary to ensure that the right contents are in the right folders. Your project's folder (`MyDocker` in our example) can have any name, but it must at least contain:
+
+  * Your `Dockerfile`, and this is also a good time to check that its name does not have any extensions,
+  * A `results` folder, which in our case will be empty,
+  * And a `src` folder (also in lower case), that contains your R file. 
+    
+Your project's folder can contain other folders, like `data` if it uses input files.
+
+<h2 id="heading--buildc"> 6. Build the Docker image </h2>
+
+Now we are going to create the virtual entity that will download R, contain your model, and be ready to execute your code. To build the image, open a terminal window (Terminal in Mac or Command Prompt in Windows) and navigate to the folder that contains your model and the Dockerfile (if not sure how to do so and followed Step 1.1, you can follow these [short instructions](#heading--navigate)). Once you moved to the directory that contains your model and the Dockerfile, type the following `build` command: 
+
+<code><pre>docker build -t <ins>imagename</ins> .</code></pre>
+
+* Replace <ins><code>imagename</ins></code> with the name you want to give to your image. It can be any name, as long as all the letters you use are lower case, with no spaces.
+* Make sure to include the `.` at the end of the command.
+
+In our example, this build command would look like this: <code>docker build -t r.example .</code> . 
+
+When you press return, Docker will start showing the progress of the processes you instructed it to perform with the Dockerfile. When it is done, you will see the line <code>Successfully tagged <ins>imagename</ins>:latest</code>. Now you will be able to run reproducible simulations in your containerized model.
+
+We included some known errors can that arise when building the image in our short [Troubleshooting section](#heading--trblshoot).
+
+<h1> Running an experiment in a container</h1>
+
+***
+
+<h2> 1. Determine the folder where the experiment results should be stored </h2>
+
+The container will open the model, run the specified experiment, and transfer the results to a folder of your preference. It is not necessary to choose a location within your project's folder, but doing so can help with the organization of your results.
+
+Note that subsequent runs will overwrite the result files if the same folder is used twice to receive the results. Therefore, it is a good idea to create a separate folder for each experiment that is run. 
+
+<h2 id="heading--runc"> 2. Run the container </h2>
+
+To run an experiment in the container, open a terminal window and type the `run` command according to your operating system:
+
+<details>
+<summary><b><code>run</code> command in Mac</b></summary>
+
+<pre><code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=rstudio -v <ins>path/to/your/results/folder</ins>:/home/results <ins>image name</ins></code></pre>
+
+Where:
+
+* <code><ins>path/to/your/results/folder</ins></code> is replaced by the _absolute_ path to your results folder in your computer. If the folder does not exist, Docker will create it. In our case, we are going to create a folder named `TestResults` inside <code>MyDocker/results/</code>. Therefore, our path would be <code>~/MyDocker/results/TestResults</code>. Note that your path has to be absolute, or, in other words, start with <code>~/</code>.
+* <code><ins>imagename</ins></code> is replaced by the name you gave to the image in the [<code>build</code> command](#heading--buildc) (in our case, <code>r.example</code>).
+
+In our example, the <code>run</code> command would look like this: <code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=rstudio -v ~/MyDocker/results/TestResults:/home/results/ r.example</code>.
+
+</details>
+
+<details>
+<summary><b><code>run</code> command in Windows</b></summary>
+
+<pre><code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=rstudio -v <ins>path/to/your/results/folder</ins>:/home/results <ins>imagename</ins></code></pre>
+
+Where:
+
+* <code><ins>path/to/your/results/folder/</ins></code>  is replaced by the _absolute_ path to your results folder in your computer. If the folder does not exist, Docker will create it. In our case, we are going to create a folder named `TestResults` inside `MyDocker/results/`. Therefore, our path would be <code>/c/Users/<ins>yourusername</ins>/MyDocker/results/TestResults</code> . Note that your path has to be absolute, or, in other words, start with `/c/`. Also be sure to replace <code><ins>yourusername</ins></code> with your own user name.
+* <code><ins>imagename</ins></code>  is replaced by the name you gave to the image in the [`build` command](#heading--buildc) (in our case, <code>r.example</code>).
+
+In our example, the `run` command would look like this: <code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=rstudio -v /c/Users/myusername/MyDocker/results/TestResults:/home/results/ r.example</code>. 
+
+</details>
+
+<h2> 3. Interact with the RStudio container</h2>
+
+Open a new tab or window of your browser of preference (e.g. Chrome, Firefox) and paste the following URL in the search bar: `http://localhost:8787`. It will ask you to provide a username and a password; type `rstudio` in both fields. You should be able to see the typical RStudio interface, and be able to open your project and files as usual.
+
+If you want to be able to store any outputs of your simulations, be sure to save them in the `results` folder of your container so they are transferred to the specified folder in your computer. In our example, outputs saved in `results` in the container will show up in the `TestResults` folder in our machine.
+
+<h2> 4. Stop the container </h4>
+
+To stop the container, type <code>docker stop rstudio</code> in a terminal window and close the browser window.
+
+As mentioned above, any results stored in <code>/home/rstudio/project/results/</code> will be available in your computer in the <code>MyDocker/results/TestResults</code> folder. Instead, any code changes you saved will only be preserved if you [commit](https://docs.docker.com/engine/reference/commandline/commit/) them to the image from which the container is running. However, this practice introduces the possibility of inadvertently including modifications or typos in the preserved image. Therefore, for the sake of reproducibility and correct archival we encourage building an image that is based on a R code where all the needed changes were already saved. 
+
+
+<h1 id ="heading--navigate">Navigating to your folder of interest</h1>
+
+***
+If you are not familiar with the use of command line to move between folders (directories) and followed Step 1.1, you can follow these instructions:
+
+<details>
+<summary><b>Navigating in Mac</b></summary>
+
+1. Open Terminal: press <kbd>command</kbd> + <kbd>space bar</kbd>, type "Terminal" and open it.
+2. Type `cd ~/MyDocker`
+
+Now you can [continue building](#heading--buildc) the Docker image. You can visit websites like [this](https://www.macworld.com/article/2042378/master-the-command-line-navigating-files-and-folders.html) to continue becoming familiar with the command line.
+
+</details>
+
+<details>
+<summary><b>Navigating in Windows</b></summary>
+
+1. Open [Command Line](https://www.computerhope.com/issues/chusedos.htm)
+2. Type `cd C:\Users\<your username>\MyDocker`, where `<your username>` is replaced by your own username.
+
+Now you can [continue building](#heading--buildc) the Docker image. 
+
+</details> 
+
+<h1 id="heading--Rexample">Schelling's segregation model </h1>
+
+***
+
+<details>
+<summary>Click here to see the script we used as example</summary>
+
+```
+number<-2000
+group<-c(rep(0,(51*51)-number),rep(1,number/2),rep(2,number/2))
+grid<-matrix(sample(group,2601,replace=F), ncol=51)
+alike_preference<-0.60
+happiness_tracker<-c()
+
+get_neighbors<-function(coords) {
+  n<-c()
+  for (i in c(1:8)) {
+    
+    if (i == 1) {
+      x<-coords[1] + 1
+      y<-coords[2]
+    }
+    
+    if (i == 2) {
+      x<-coords[1] + 1
+      y<-coords[2] + 1
+    }
+    
+    if (i == 3) {
+      x<-coords[1]
+      y<-coords[2] + 1
+    }
+    
+    if (i == 4) {
+      x<-coords[1] - 1
+      y<-coords[2] + 1
+    }
+    
+    if (i == 5) {
+      x<-coords[1] - 1
+      y<-coords[2]
+    }
+    
+    if (i == 6) {
+      x<-coords[1] - 1
+      y<-coords[2] - 1
+    }
+    
+    if (i == 7) {
+      x<-coords[1]
+      y<-coords[2] - 1
+    }
+    
+    if (i == 8) {
+      x<-coords[1] + 1
+      y<-coords[2] - 1
+    }
+    
+    if (x < 1) {
+      x<-51
+    }
+    if (x > 51) {
+      x<-1
+    }
+    if (y < 1) {
+      y<-51
+    }
+    if (y > 51) {
+      y<-1
+    }
+    n<-rbind(n,c(x,y))
+  }
+  n
+}
+for (t in c(1:100)) {
+  happy_cells<-c()
+  unhappy_cells<-c()
+  for (j in c(1:51)) {
+    for (k in c(1:51)) {
+      current<-c(j,k)
+      value<-grid[j,k] 
+      if (value > 0) {
+        like_neighbors<-0
+        all_neighbors<-0
+        neighbors<-get_neighbors(current)
+        for (i in c(1:nrow(neighbors))){
+          x<-neighbors[i,1]
+          y<-neighbors[i,2]
+          if (grid[x,y] > 0) {
+            all_neighbors<-all_neighbors + 1
+          }
+          if (grid[x,y] == value) {
+            like_neighbors<-like_neighbors + 1
+          }
+        }
+        if (is.nan(like_neighbors / all_neighbors)==FALSE) {
+          if ((like_neighbors / all_neighbors) < alike_preference) {
+            unhappy_cells<-rbind(unhappy_cells,c(current[1],current[2]))
+          }
+          else {
+            happy_cells<-rbind(happy_cells,c(current[1],current[2]))
+          }
+        }
+        
+        else {
+          happy_cells<-rbind(happy_cells,c(current[1],current[2]))
+        }
+      }
+    }
+  }
+  happiness_tracker<-append(happiness_tracker,length(happy_cells)/(length(happy_cells) + length(unhappy_cells)))
+  rand<-sample(nrow(unhappy_cells))
+  for (i in rand) {
+    mover<-unhappy_cells[i,]
+    mover_val<-grid[mover[1],mover[2]]
+    move_to<-c(sample(1:51,1),sample(1:51,1))
+    move_to_val<-grid[move_to[1],move_to[2]]
+    while (move_to_val > 0 ){
+      move_to<-c(sample(1:51,1),sample(1:51,1))
+      move_to_val<-grid[move_to[1],move_to[2]]
+    }
+    grid[mover[1],mover[2]]<-0
+    grid[move_to[1],move_to[2]]<-mover_val
+  }
+}
+
+png("results/output.png", width=700, height=400)
+par(mfrow=c(1,2))
+image(grid,col=c("black","red","green"),axes=F)
+plot(1:100, happiness_tracker,ylab="percent happy",xlab="time",ylim=c(0,1),oma = c(0, 0, 2, 0),col="red", type="l")
+dev.off()
+```
+</details>
+
+<h1 id="heading--trblshoot">Troubleshooting Guide</h1>
+
+***
+<details>
+  <summary>Click here to see some known error messages and their probable causes</summary>
+  
+<h3> Your <code>build</code> command is not correct</h3>
+  
+When trying to build your image, you get an error message like the following:
+
+<code>"docker build" requires exactly 1 argument.</code>
+
+It means that your `build` command has some typing error. The most likely one is that it is lacking the last `.`.
+
+<h3>Your image name contains upper case letters.</h3>
+
+When trying to build your image, you get an error message like the following:
+
+<code>invalid argument "Rexample" for "-t, --tag" flag: invalid reference format: repository name must be lowercase</code>
+
+Use only lower case letters to name the image.
+
+<h3> Your Dockerfile is not in plain text format</h3>
+
+When trying to build your image, you get an error message like the following:
+
+<code>Error response from daemon: Dockerfile parse error line 1: unknown instruction: {\RTF1\ANSI\ANSICPG1252\COCOARTF1671\COCOASUBRTF600</code>
+
+You will need to convert the format of your file to plain text. If you are using TextEdit, open your Dockerfile, press <kbd>shift</kbd> + <kbd>command</kbd> + <kbd>T</kbd> and save it. Use Finder to make sure that the name of the file does not include any extensions.
+
+<h3> The Dockerfile was saved under a different name</h3>
+
+When trying to build your image, you get an error message like the following:
+
+<code>unable to prepare context: unable to evaluate symlinks in Dockerfile path: lstat ~/MyDocker/Dockerfile: no such file or directory</code>
+
+Use Finder or File Explorer to check that the name of the file was correctly spelled (`Dockerfile`), and it does not end with any extensions. If your file's name looks like `Dockerfile.txt`, you have to edit its name to erase the `.txt` termination. If your file's name ends with a `.rtf`, go to the previous error to see how to correct it.
+
+If you are not able to erase the extension from your `Dockerfile`'s name, you can also add a `-f` flag to your `build` command. With this flag you can tell Docker the name of your Dockerfile. In our example, and assuming we have a file named `Dockerfile.txt`, our build command would be `docker build -f Dockerfile.txt -t r.example .`. Note that it is necessary to have a Dockerfile in plain text format to be able to build a Docker image.
+
+</details>
