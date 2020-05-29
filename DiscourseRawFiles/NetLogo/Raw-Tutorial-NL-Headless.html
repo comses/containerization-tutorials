@@ -2,6 +2,10 @@ This tutorial shows how to containerize a NetLogo model in a Docker image. As a 
 
 To start this tutorial, you will need to have [Docker](https://www.docker.com/products/docker-desktop) installed in your computer, as well as a .nlogo file with your working model with at least one BehaviorSpace experiment saved in it. We will use as an example the Wolf Sheep Predation model from the Model Library, which we saved as WolfSheep.nlogo. Following our [suggested directory structure](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424), we created a project folder named `MyDocker` and it contains the folders `data`, `docs`, `results`, and `src`. WolfSheep.nlogo is in the `src` folder and the rest of the folders are empty. Since this .nlogo file does not contain any BehaviorSpace experiments, we created one short experiment named 'test'. If you want to follow this exact example, you can create an arbitrary BehaviorSpace experiment and save it.
 
+Here is a video walkthrough of the steps described below:
+
+https://youtu.be/ICYM-vXx_Q4
+
 <h1 id='heading--building'>Building the image</h1>
 
 ***
@@ -160,7 +164,7 @@ To run an experiment in the container, open a terminal window and type the `run`
 <details>
 <summary><b><code>run</code> command in Mac</b></summary>
 
-<pre><code>docker run -v <ins>path/to/your/results/folder</ins>:/home/results <ins>imagename</ins> --experiment <ins>experiment name</ins></code></pre>
+<pre><code>docker run -v <ins>path/to/your/results/folder</ins>:/home/results <ins>image name</ins> --experiment <ins>experiment name</ins></code></pre>
 
 Where:
 

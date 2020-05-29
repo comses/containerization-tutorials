@@ -2,6 +2,10 @@ This tutorial shows how to containerize a NetLogo model in a Docker image and ho
 
 To start this tutorial, you will need to have [Docker](https://www.docker.com/products/docker-desktop) installed in your computer, as well as a .nlogo file with your working model. We will use as an example the Wolf Sheep Predation model from the Model Library, which we saved as WolfSheep.nlogo. Following our [suggested directory structure](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424), we created a project folder named `MyDocker` and it contains the folders `data`, `docs`, `results`, and `src`. WolfSheep.nlogo is in the `src` folder and the rest of the folders are empty. Since this .nlogo file does not contain any BehaviorSpace experiments, we created one short experiment named 'test'. If you want to follow this exact example, you can create an arbitrary BehaviorSpace experiment and save it.
 
+Here is a video walkthrough of the steps described below:
+
+https://youtu.be/Sv95pKxdiAg
+
 <h1 id='heading--building'>Building the image</h1>
 
 ***
@@ -90,7 +94,7 @@ RUN mv /home/src/$MODEL_NAME /home/src/NLModel.nlogo
 CMD ["/home/netlogo/netlogo-headw.sh", "/home/src/NLModel.nlogo"]
 ```
 
-If you are curious about the meaning of these lines, or how to get only the table or the spreadsheet output, we included a short explanation [below](#heading--sections).
+If you are curious about the meaning of these lines we included a short explanation [below](#heading--sections).
 
 <h2> 4. Save your Dockerfile </h2>
 
@@ -99,7 +103,7 @@ It is important to save the Dockerfile with the correct format and name, or Dock
 <details>
 <summary><b>Saving your Dockerfile in Mac</b></summary>
 
-1. If using TextEdit, make sure it will be saved as plain text. To do this, you can click on Format and then on Make Plain Text, or just press "shift + command + T".
+1. If using TextEdit, make sure it will be saved as plain text. To do this, you can click on Format and then on Make Plain Text, or just press <kbd>shift</kbd> + <kbd>command</kbd> + <kbd>T</kbd>.
 2. Click on File, then Save... . In the dialog window that opens:
     + Type `Dockerfile` as the name of the file.
     + Choose the folder you are going to use (Step 1) as the location of the file. In our example, we would save the `Dockerfile` in `MyDocker`.
@@ -154,7 +158,7 @@ When you run the container, you will be able to create and run BehaviorSpace exp
 
 <h2 id="heading--runc"> 2. Run the container </h2>
 
-To be able to visualize and interact with NetLogo's GUI, it is necessary to make the connection between your container and your computer. To do this, we are going to use another image named [docker-x11-bridge](https://github.com/JAremko/docker-x11-bridge). First a container from the bridge image is started and then the container from the image you just created is run.
+To be able to visualize and interact with NetLogo's GUI, it is necessary to make the connection between your container and your computer. To do this, we are going to use another image named [docker-x11-bridge](https://hub.docker.com/r/jare/x11-bridge). First a container from the bridge image is started and then the container from the image you just created is run.
 
 <details>
 <summary><b><code>run</code> commands in Mac</b></summary>
@@ -305,5 +309,5 @@ This means that the name of the model you provided in the `build` command, i.e. 
 
 In the GUI, BehaviorSpace does not open after clicking on it in the Tools menu.
 
-Use the keyboard shortcut: ctrl (cmd for Mac) + shift + B
+Use the keyboard shortcut: <kbd>ctrl</kbd> (<kbd>command</kbd> for Mac) + <kbd>shift</kbd> + <kbd>B</kbd>
 </details>

@@ -4,7 +4,9 @@ This tutorial will allow you to containerize your model and still be able to use
 
 To start this tutorial, you will need to have [Docker](https://www.docker.com/products/docker-desktop) installed in your computer, as well as the R files of your model. To be able to see the results of your simulation, the code has to write the outputs in a `results` folder. We will use as an example the implementation of Schelling's segregation model proposed in [this tutorial](https://simulatingcomplexity.wordpress.com/2016/01/06/building-a-schelling-segregation-model-in-r/) by simulatingcomplexity. If you want to try the following steps using the same example, you can copy the script we include at [the end](#heading--Rexample) of this tutorial. Following our [suggested directory structure](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424), we created a project folder named `MyDocker` and it contains the folders `data`, `docs`, `results`, and `src`. `schelling.R` is in the `src` folder and the rest of the folders are empty. 
 
+Here is a video walkthrough of the steps described below:
 
+https://youtu.be/Sh8aJYx7kI8
 
 <h1 id='heading--building'>Building the image</h1>
 
@@ -37,20 +39,11 @@ The Dockerfile is the file that describes how to create the image of your model 
 
 <pre><code>FROM rocker/rstudio:<ins>your_R_version</ins>
 
-# Create a project folder
-RUN mkdir /home/rstudio/project
-   
-# Copy contents of MyDocker folder to project folder in container 
-COPY --chown=rstudio:rstudio . /home/rstudio/project/
-
-# Set working directory to project
-WORKDIR /home/rstudio/project/
-
 # Install R packages (uncomment next line if needed)
 # RUN R -e "install.packages(<ins>vector_of_package_names</ins>)"
 
-# Change ownership of files
-RUN chown -R rstudio:rstudio /home/rstudio
+# Copy contents of MyDocker folder to project folder in container 
+COPY --chown=rstudio:rstudio . /home/rstudio/
 </code></pre>
 
 <h2> 3. Modify the Dockerfile blueprint as needed</h2>
@@ -131,34 +124,34 @@ To run an experiment in the container, open a terminal window and type the `run`
 <details>
 <summary><b><code>run</code> command in Mac</b></summary>
 
-<pre><code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=rstudio -v <ins>path/to/your/results/folder</ins>:/home/results <ins>image name</ins></code></pre>
+<pre><code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=mypassword -v <ins>path/to/your/results/folder</ins>:/home/results <ins>image name</ins></code></pre>
 
 Where:
 
 * <code><ins>path/to/your/results/folder</ins></code> is replaced by the _absolute_ path to your results folder in your computer. If the folder does not exist, Docker will create it. In our case, we are going to create a folder named `TestResults` inside <code>MyDocker/results/</code>. Therefore, our path would be <code>~/MyDocker/results/TestResults</code>. Note that your path has to be absolute, or, in other words, start with <code>~/</code>.
 * <code><ins>imagename</ins></code> is replaced by the name you gave to the image in the [<code>build</code> command](#heading--buildc) (in our case, <code>r.example</code>).
 
-In our example, the <code>run</code> command would look like this: <code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=rstudio -v ~/MyDocker/results/TestResults:/home/results/ r.example</code>.
+In our example, the <code>run</code> command would look like this: <code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=mypassword -v ~/MyDocker/results/TestResults:/home/results/ r.example</code>.
 
 </details>
 
 <details>
 <summary><b><code>run</code> command in Windows</b></summary>
 
-<pre><code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=rstudio -v <ins>path/to/your/results/folder</ins>:/home/results <ins>imagename</ins></code></pre>
+<pre><code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=mypassword -v <ins>path/to/your/results/folder</ins>:/home/results <ins>imagename</ins></code></pre>
 
 Where:
 
 * <code><ins>path/to/your/results/folder/</ins></code>  is replaced by the _absolute_ path to your results folder in your computer. If the folder does not exist, Docker will create it. In our case, we are going to create a folder named `TestResults` inside `MyDocker/results/`. Therefore, our path would be <code>/c/Users/<ins>yourusername</ins>/MyDocker/results/TestResults</code> . Note that your path has to be absolute, or, in other words, start with `/c/`. Also be sure to replace <code><ins>yourusername</ins></code> with your own user name.
 * <code><ins>imagename</ins></code>  is replaced by the name you gave to the image in the [`build` command](#heading--buildc) (in our case, <code>r.example</code>).
 
-In our example, the `run` command would look like this: <code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=rstudio -v /c/Users/myusername/MyDocker/results/TestResults:/home/results/ r.example</code>. 
+In our example, the `run` command would look like this: <code>docker run -d --name rstudio -p 8787:8787 -e PASSWORD=mypassword -v /c/Users/myusername/MyDocker/results/TestResults:/home/results/r.example</code>. 
 
 </details>
 
 <h2> 3. Interact with the RStudio container</h2>
 
-Open a new tab or window of your browser of preference (e.g. Chrome, Firefox) and paste the following URL in the search bar: `http://localhost:8787`. It will ask you to provide a username and a password; type `rstudio` in both fields. You should be able to see the typical RStudio interface, and be able to open your project and files as usual.
+Open a new tab or window of your browser of preference (e.g. Chrome, Firefox) and paste the following URL in the search bar: `http://localhost:8787`. It will ask you to provide the username (`rstudio`) and the password (`mypassword` or any password you choose to use in the `run` command). Afterwards, you should be able to see the typical RStudio interface and be able to open your project and files as usual.
 
 If you want to be able to store any outputs of your simulations, be sure to save them in the `results` folder of your container so they are transferred to the specified folder in your computer. In our example, outputs saved in `results` in the container will show up in the `TestResults` folder in our machine.
 

@@ -1,10 +1,12 @@
 This tutorial shows how to containerize an R model in a Docker image. As a result, you will be able to run simulations in a container and get the results in a folder that you specify. 
 
-Containerizing your model using just an R installation is the preferred method for archival purposes, but if you are looking for a way to containerize your model and still be able to use RStudio within the container, please follow [this tutorial](https://simulatingcomplexity.wordpress.com/2016/01/06/building-a-schelling-segregation-model-in-r/). This series of tutorials was developed assuming that the user has a finished model and is looking for a straightforward way to containerize it. Another possibility is to develop your model within the Docker image, which is covered in the [R Docker tutorial](https://ropenscilabs.github.io/r-docker-tutorial/), produced by rOpenSci Labs. 
+Containerizing your model using just an R installation is the preferred method for archival purposes, but if you are looking for a way to containerize your model and still be able to use RStudio within the container, please follow [this tutorial](https://forum.comses.net/t/containerizing-your-r-model-on-rstudio/8302). This series of tutorials was developed assuming that the user has a finished model and is looking for a straightforward way to containerize it. Another possibility is to develop your model within the Docker image, which is covered in the [R Docker tutorial](https://ropenscilabs.github.io/r-docker-tutorial/), produced by rOpenSci Labs. 
 
 To start this tutorial, you will need to have [Docker](https://www.docker.com/products/docker-desktop) installed in your computer, as well as the R files of your model. To be able to see the results of your simulation, the code has to write the outputs in a `results` folder. We will use as an example the implementation of Schelling's segregation model proposed in [this tutorial](https://simulatingcomplexity.wordpress.com/2016/01/06/building-a-schelling-segregation-model-in-r/) by simulatingcomplexity. If you want to try the following steps using the same example, you can copy the script we include at [the end](#heading--Rexample) of this tutorial. Following our [suggested directory structure](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000424), we created a project folder named `MyDocker` and it contains the folders `data`, `docs`, `results`, and `src`. `schelling.R` is in the `src` folder and the rest of the folders are empty. 
 
+Here is a video walkthrough of the steps described below:
 
+https://youtu.be/rWj0elNkaLk
 
 <h1 id='heading--building'>Building the image</h1>
 
@@ -186,6 +188,7 @@ Now you can [continue building](#heading--buildc) the Docker image.
 <details>
 <summary>Click here to see the script we used as example</summary>
 
+(Modified from [this tutorial](https://simulatingcomplexity.wordpress.com/2016/01/06/building-a-schelling-segregation-model-in-r/) by simulatingcomplexity).
 ```
 number<-2000
 group<-c(rep(0,(51*51)-number),rep(1,number/2),rep(2,number/2))
